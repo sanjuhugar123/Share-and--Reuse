@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+
+{% block title %}Donor Dashboard - Share & Reuse{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Welcome Banner -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 bg-white p-4 rounded-4 border shadow-sm">
+    <div class="d-flex align-items-center gap-3">
+      <div class="stat-icon bg-success-subtle text-success mb-0" style="width: 58px; height: 58px;">
+        <i class="bi bi-person-heart fs-3"></i>
+      </div>
+      <div>
+        <h3 class="fw-bold text-dark mb-1">{{ current_user.full_name }}</h3>
+        <div class="text-muted small">
+          <span class="badge bg-light text-dark border text-capitalize me-2">Donor Type: {{ current_user.donor_type or 'General Donor' }}</span>
+          <i class="bi bi-geo-alt-fill text-danger"></i> {{ current_user.address }}, {{ current_user.city }}
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <a href="{{ url_for('create_donation') }}" class="btn btn-primary-custom shadow-sm px-4 py-2">
+        <i class="bi bi-plus-circle me-1"></i> Post New Donation
+      </a>
+    </div>
+  </div>
+
+  <!-- Metric Counters -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-success-subtle text-success">
+          <i class="bi bi-egg-fried"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-1">{{ total_food_kg }} <small class="fs-6 text-muted">kg</small></h3>
+        <div class="text-muted small">Food Saved From Waste</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-primary-subtle text-primary">
+          <i class="bi bi-tag-fill"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-1">{{ total_clothes_pcs }} <small class="fs-6 text-muted">items</small></h3>
+        <div class="text-muted small">Clothes Shared / Recycled</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-warning-subtle text-warning">
+          <i class="bi bi-hourglass-split"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-1">{{ active_count }}</h3>
+        <div class="text-muted small">Active Donations</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-info-subtle text-info">
+          <i class="bi bi-patch-check-fill"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-1">{{ completed_count }}</h3>
+        <div class="text-muted small">Completed Pickups</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Donations Section -->
+  <div class="app-card mb-4">
+    <div class="app-card-header d-flex justify-content-between align-items-center">
+      <span class="fs-5 fw-bold text-dark"><i class="bi bi-box-seam me-2 text-primary"></i> Your Donations</span>
+      <span class="badge bg-secondary">{{ donations|length }} Total</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th scope="col" class="ps-4">Item Details</th>
+            <th scope="col">Category & Qty</th>
+            <th scope="col">Status</th>
+            <th scope="col">Pickup & Time</th>
+            <th scope="col">Verification OTP</th>
+            <th scope="col" class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for don in donations %}
+            <tr>
+              <td class="ps-4">
+                <div class="d-flex align-items-center gap-3">
+                  {% if don.image_url %}
+                    <img src="{{ don.image_url }}" alt="{{ don.title }}" class="rounded-3 object-fit-cover" style="width: 50px; height: 50px;">
+                  {% else %}
+                    <div class="rounded-3 bg-light d-flex align-items-center justify-content-center text-muted" style="width: 50px; height: 50px;">
+                      <i class="bi bi-box"></i>
+                    </div>
+                  {% endif %}
+                  <div>
+                    <a href="{{ url_for('donation_detail', donation_id=don.id) }}" class="fw-bold text-dark text-decoration-none">
+                      {{ don.title }}
+                    </a>
+                    <div class="small text-muted text-truncate" style="max-width: 280px;">{{ don.description }}</div>
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <div class="d-flex flex-column gap-1">
+                  {% if don.category == 'food' %}
+                    <span class="badge badge-food"><i class="bi bi-egg-fried"></i> Food</span>
+                  {% else %}
+                    <span class="badge badge-clothes"><i class="bi bi-tag"></i> Clothes</span>
+                  {% endif %}
+                  <span class="fw-semibold text-dark small">{{ don.quantity }} {{ don.quantity_unit }}</span>
+                </div>
+              </td>
+
+              <td>
+                <span class="badge badge-{{ don.status }} text-capitalize">{{ don.status.replace('_', ' ') }}</span>
+                {% if don.assignment and don.assignment.organization %}
+                  <div class="small text-muted mt-1">
+                    <i class="bi bi-building"></i> {{ don.assignment.organization.org_name }}
+                  </div>
+                {% endif %}
+              </td>
+
+              <td>
+                {% if don.category == 'food' and don.food_detail %}
+                  <div class="small mb-1">
+                    <span class="expiry-countdown badge bg-light text-dark border" data-deadline="{{ don.food_detail.expiry_deadline.isoformat() }}Z">
+                      Checking...
+                    </span>
+                  </div>
+                {% endif %}
+                <div class="small text-muted">
+                  <i class="bi bi-calendar3"></i> {{ don.created_at.strftime('%d %b, %I:%M %p') }}
+                </div>
+              </td>
+
+              <td>
+                {% if don.status in ['available', 'accepted', 'in_transit'] %}
+                  <div class="bg-light border rounded px-2 py-1 text-center font-monospace fw-bold text-primary" style="letter-spacing: 2px;">
+                    {{ don.verification_pin }}
+                  </div>
+                  <div class="small text-muted text-center" style="font-size: 0.7rem;">Share with driver</div>
+                {% elif don.status == 'completed' %}
+                  <span class="badge bg-success-subtle text-success"><i class="bi bi-check-all"></i> Verified</span>
+                {% else %}
+                  <span class="text-muted small">-</span>
+                {% endif %}
+              </td>
+
+              <td class="text-end pe-4">
+                <div class="btn-group">
+                  <a href="{{ url_for('donation_detail', donation_id=don.id) }}" class="btn btn-sm btn-outline-secondary" title="View Details">
+                    <i class="bi bi-eye"></i>
+                  </a>
+
+                  {% if don.status == 'available' %}
+                    <a href="{{ url_for('nearby_orgs', donation_id=don.id) }}" class="btn btn-sm btn-outline-success" title="Match Nearby Orgs">
+                      <i class="bi bi-geo-alt"></i> Match
+                    </a>
+                    <form method="POST" action="{{ url_for('cancel_donation', donation_id=don.id) }}" onsubmit="return confirm('Are you sure you want to cancel this donation?');" class="d-inline">
+                      <button type="submit" class="btn btn-sm btn-outline-danger" title="Cancel">
+                        <i class="bi bi-x-circle"></i>
+                      </button>
+                    </form>
+                  {% elif don.status == 'completed' %}
+                    <a href="{{ url_for('certificate', donation_id=don.id) }}" class="btn btn-sm btn-outline-primary" title="Impact Certificate">
+                      <i class="bi bi-award"></i> Certificate
+                    </a>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="6" class="text-center py-5 text-muted">
+                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                You haven't posted any donations yet. Click <strong>"Post New Donation"</strong> above to begin!
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

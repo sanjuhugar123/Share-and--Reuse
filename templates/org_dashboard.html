@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+
+{% block title %}Organization Dashboard - Share & Reuse{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  
+  <!-- Organization Profile Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 bg-white p-4 rounded-4 border shadow-sm">
+    <div class="d-flex align-items-center gap-3">
+      <div class="stat-icon bg-primary-subtle text-primary mb-0" style="width: 58px; height: 58px;">
+        <i class="bi bi-building fs-3"></i>
+      </div>
+      <div>
+        <div class="d-flex align-items-center gap-2">
+          <h3 class="fw-bold text-dark mb-0">{{ org.org_name }}</h3>
+          {% if org.is_verified %}
+            <span class="badge bg-success-subtle text-success border border-success-subtle">
+              <i class="bi bi-patch-check-fill me-1"></i> Verified
+            </span>
+          {% else %}
+            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+              <i class="bi bi-hourglass-split me-1"></i> Verification Pending
+            </span>
+          {% endif %}
+        </div>
+        <div class="text-muted small mt-1">
+          <span class="badge bg-light text-dark border text-capitalize me-2">{{ org.org_type.replace('_', ' ') }}</span>
+          <span>Reg: <strong>{{ org.registration_no }}</strong></span> • 
+          <i class="bi bi-geo-alt-fill text-danger"></i> {{ current_user.address }}, {{ current_user.city }}
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('accepted_pickups') }}" class="btn btn-outline-primary position-relative">
+        <i class="bi bi-truck me-1"></i> Active Pickups
+        {% if active_pickups_count > 0 %}
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            {{ active_pickups_count }}
+          </span>
+        {% endif %}
+      </a>
+      <a href="{{ url_for('donation_history') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-journal-text me-1"></i> History
+      </a>
+    </div>
+  </div>
+
+  <!-- Verification Alert if unverified -->
+  {% if not org.is_verified %}
+    <div class="alert alert-warning d-flex align-items-center gap-3 rounded-4 mb-4 shadow-sm" role="alert">
+      <i class="bi bi-exclamation-triangle-fill fs-3 text-warning"></i>
+      <div>
+        <div class="fw-bold">Your organization profile is currently undergoing verification by the Admin.</div>
+        <div class="small">You can browse matching listings, but will be able to dispatch pickups once verified. Contact admin@shareandreuse.org for expedited review.</div>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Urgent Food Alert Banner -->
+  {% set urgent_items = donation_cards | selectattr('is_urgent', 'equalto', true) | list %}
+  {% if urgent_items and org.accepts_food %}
+    <div class="alert alert-danger d-flex align-items-center justify-content-between rounded-4 mb-4 p-3 border-danger shadow-sm urgent-pulse" role="alert">
+      <div class="d-flex align-items-center gap-3">
+        <i class="bi bi-lightning-charge-fill fs-2 text-danger"></i>
+        <div>
+          <h6 class="fw-bold mb-0 text-danger">URGENT SURPLUS FOOD ALERT ({{ urgent_items|length }} Listings)</h6>
+          <div class="small text-dark">Cooked banquet or hotel meals nearby with &lt; 4 hours shelf life. Immediate pickup recommended!</div>
+        </div>
+      </div>
+      <a href="{{ url_for('org_dashboard', urgent='yes', category='food') }}" class="btn btn-sm btn-danger px-3 py-2 fw-bold text-nowrap">
+        Filter Urgent Food
+      </a>
+    </div>
+  {% endif %}
+
+  <!-- Filters & Header Row -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <h4 class="fw-bold text-dark mb-1">Available Nearby Surplus</h4>
+      <p class="text-muted small mb-0">Ranked by distance from your center using Haversine calculation</p>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2">
+      <a href="{{ url_for('org_dashboard', category='all') }}" class="btn btn-sm {% if category_filter == 'all' and urgency_filter != 'yes' %}btn-dark{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
+        All Items
+      </a>
+      {% if org.accepts_food %}
+        <a href="{{ url_for('org_dashboard', category='food') }}" class="btn btn-sm {% if category_filter == 'food' and urgency_filter != 'yes' %}btn-warning text-dark fw-bold{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
+          <i class="bi bi-egg-fried"></i> Food Only
+        </a>
+      {% endif %}
+      {% if org.accepts_clothes %}
+        <a href="{{ url_for('org_dashboard', category='clothes') }}" class="btn btn-sm {% if category_filter == 'clothes' %}btn-primary fw-bold{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
+          <i class="bi bi-tag"></i> Clothes
+        </a>
+      {% endif %}
+      <a href="{{ url_for('org_dashboard', urgent='yes') }}" class="btn btn-sm {% if urgency_filter == 'yes' %}btn-danger fw-bold{% else %}btn-outline-danger{% endif %} rounded-pill px-3">
+        <i class="bi bi-lightning-fill"></i> Urgent Rescue
+      </a>
+    </div>
+  </div>
+
+  <!-- Cards Grid -->
+  <div class="row g-4">
+    {% for card in donation_cards %}
+      {% set don = card.donation %}
+      <div class="col-md-6 col-lg-4">
+        <div class="app-card h-100 d-flex flex-column {% if card.is_urgent %}urgent-pulse{% endif %}">
+          
+          <div class="position-relative" style="height: 180px; overflow: hidden; background: #e2e8f0;">
+            {% if don.image_url %}
+              <img src="{{ don.image_url }}" alt="{{ don.title }}" class="w-100 h-100 object-fit-cover">
+            {% else %}
+              <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted">
+                <i class="bi bi-box fs-1"></i>
+              </div>
+            {% endif %}
+
+            <div class="position-absolute top-0 start-0 m-3 d-flex gap-2">
+              {% if don.category == 'food' %}
+                <span class="badge badge-food"><i class="bi bi-egg-fried"></i> Food</span>
+                {% if card.is_urgent %}
+                  <span class="badge bg-danger"><i class="bi bi-lightning-fill"></i> Urgent</span>
+                {% endif %}
+              {% else %}
+                <span class="badge badge-clothes"><i class="bi bi-tag"></i> Clothes</span>
+                {% if don.clothes_detail and don.clothes_detail.condition == 'damaged_recycling' %}
+                  <span class="badge badge-recycle"><i class="bi bi-recycle"></i> Recycling Fabric</span>
+                {% else %}
+                  <span class="badge bg-success"><i class="bi bi-heart"></i> Wearable</span>
+                {% endif %}
+              {% endif %}
+            </div>
+
+            <div class="position-absolute bottom-0 end-0 m-2">
+              <span class="badge bg-dark text-white fw-bold">
+                {{ don.quantity }} {{ don.quantity_unit }}
+              </span>
+            </div>
+          </div>
+
+          <div class="app-card-body d-flex flex-column justify-content-between flex-grow-1">
+            <div>
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge bg-success-subtle text-success fw-bold">
+                  <i class="bi bi-geo-alt"></i> {{ card.distance_km }} km away
+                </span>
+                <span class="small text-muted">~{{ card.transit_mins }} mins travel</span>
+              </div>
+
+              <h5 class="fw-bold text-dark mb-1 mt-2">{{ don.title }}</h5>
+              <p class="small text-muted mb-2 text-truncate-2">{{ don.description }}</p>
+
+              <!-- Proximity & Address -->
+              <div class="small text-secondary mb-2">
+                <i class="bi bi-pin-map text-danger me-1"></i> {{ don.pickup_address }}
+              </div>
+
+              <!-- Category Details Badges -->
+              {% if don.category == 'food' and don.food_detail %}
+                <div class="small mb-2 p-2 bg-light rounded border">
+                  <div><strong>Storage:</strong> <span class="text-capitalize">{{ don.food_detail.storage_condition }}</span></div>
+                  <div>
+                    <span class="expiry-countdown" data-deadline="{{ don.food_detail.expiry_deadline.isoformat() }}Z">
+                      Checking deadline...
+                    </span>
+                  </div>
+                </div>
+              {% elif don.category == 'clothes' and don.clothes_detail %}
+                <div class="small mb-2 p-2 bg-light rounded border">
+                  <div><strong>Condition:</strong> {{ don.clothes_detail.condition.replace('_', ' ').capitalize() }}</div>
+                  <div><strong>Target:</strong> {{ don.clothes_detail.target_age_group.capitalize() }}</div>
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- Action Button -->
+            <div class="pt-3 border-top mt-3 d-flex justify-content-between align-items-center">
+              <a href="{{ url_for('donation_detail', donation_id=don.id) }}" class="btn btn-sm btn-outline-secondary">
+                Details
+              </a>
+
+              {% if org.is_verified %}
+                <button type="button" class="btn btn-sm btn-primary-custom" data-bs-toggle="modal" data-bs-target="#acceptModal{{ don.id }}">
+                  <i class="bi bi-check2-circle me-1"></i> Accept Pickup
+                </button>
+              {% else %}
+                <button type="button" class="btn btn-sm btn-secondary" disabled title="Pending Admin Verification">
+                  Pending Verification
+                </button>
+              {% endif %}
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Accept Modal for this donation -->
+      <div class="modal fade" id="acceptModal{{ don.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+              <h5 class="modal-title fw-bold text-dark">Confirm Pickup Dispatch</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form method="POST" action="{{ url_for('accept_donation', donation_id=don.id) }}">
+              <div class="modal-body p-4">
+                <div class="p-3 bg-light rounded-3 border mb-3">
+                  <div class="fw-bold text-dark">{{ don.title }}</div>
+                  <div class="small text-muted"><i class="bi bi-geo-alt"></i> {{ don.pickup_address }}, {{ don.city }}</div>
+                  <div class="small text-success fw-bold mt-1">Distance: {{ card.distance_km }} km away (~{{ card.transit_mins }} min drive)</div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold text-muted">Assigned Volunteer / Driver Name</label>
+                  <input type="text" class="form-control" name="volunteer_name" value="{{ current_user.full_name }}" required>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold text-muted">Volunteer Contact Phone</label>
+                  <input type="tel" class="form-control" name="volunteer_phone" value="{{ current_user.phone }}" required>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold text-muted">Estimated Arrival / Pickup Time</label>
+                  <input type="datetime-local" class="form-control" name="pickup_time" required>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold text-muted">Dispatch / Vehicle Notes</label>
+                  <textarea class="form-control" name="notes" rows="2" placeholder="e.g. Dispatched thermal container van #KA-29-M-1200"></textarea>
+                </div>
+              </div>
+
+              <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary-custom px-4 fw-bold">Confirm & Accept</button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="col-12 text-center py-5 text-muted">
+        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+        <h5>No donations match current filters.</h5>
+        <p class="small">We will notify you when donors near your location post items in your category.</p>
+        <a href="{{ url_for('org_dashboard') }}" class="btn btn-outline-primary btn-sm">Clear Filters</a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

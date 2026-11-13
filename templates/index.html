@@ -1,0 +1,326 @@
+{% extends 'base.html' %}
+
+{% block title %}Share & Reuse - Bridging Surplus Food & Reusable Clothes with Verified Organizations{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-banner">
+  <div class="container position-relative" style="z-index: 2;">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7 text-center text-lg-start">
+        <span class="badge bg-white text-success px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm">
+          <i class="bi bi-geo-alt-fill text-danger me-1"></i> Location-Aware Redistribution Platform
+        </span>
+        <h1 class="display-4 fw-extrabold text-white mb-3" style="line-height: 1.15;">
+          Don't Waste It. <br><span class="text-warning">Share & Reuse It.</span>
+        </h1>
+        <p class="lead text-light mb-4 opacity-90" style="max-width: 600px;">
+          Seamlessly connect hotels, function halls, colleges, and citizens having surplus food and reusable or damaged clothes with verified local NGOs, orphanages, old-age homes, and textile recycling units.
+        </p>
+        <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start">
+          {% if current_user and current_user.role == 'donor' %}
+            <a href="{{ url_for('create_donation') }}" class="btn btn-warning btn-lg px-4 py-3 fw-bold text-dark shadow">
+              <i class="bi bi-plus-circle me-2"></i> Create Donation
+            </a>
+            <a href="{{ url_for('donor_dashboard') }}" class="btn btn-outline-light btn-lg px-4 py-3 fw-bold">
+              <i class="bi bi-speedometer2 me-2"></i> Go to Dashboard
+            </a>
+          {% elif current_user and current_user.role == 'organization' %}
+            <a href="{{ url_for('org_dashboard') }}" class="btn btn-warning btn-lg px-4 py-3 fw-bold text-dark shadow">
+              <i class="bi bi-inbox me-2"></i> View Matching Requests
+            </a>
+          {% else %}
+            <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg px-4 py-3 fw-bold text-dark shadow">
+              <i class="bi bi-heart-fill text-danger me-2"></i> Donate Food / Clothes
+            </a>
+            <a href="{{ url_for('register') }}?role=organization" class="btn btn-outline-light btn-lg px-4 py-3 fw-bold">
+              <i class="bi bi-building me-2"></i> Register as NGO / Recycler
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);">
+          <div class="card-body p-4">
+            <h5 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+              <i class="bi bi-lightning-charge-fill text-danger"></i> Urgent Food Alert System
+            </h5>
+            <p class="small text-muted mb-3">
+              Hotels & banquet halls can set food preparation time and expiry deadlines. When time is under 4 hours, nearby food banks and shelters are alerted instantly.
+            </p>
+            <div class="p-3 bg-light rounded-3 border mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge bg-warning text-dark"><i class="bi bi-cup-hot-fill me-1"></i> Cooked Surplus</span>
+                <span class="badge bg-danger">Urgent Dispatch</span>
+              </div>
+              <div class="fw-bold text-dark">Surplus Wedding Banquet Meals</div>
+              <div class="small text-muted"><i class="bi bi-geo-alt text-danger"></i> Vidyagiri, Bagalkote • 18 kg (~60 meals)</div>
+              <div class="small text-danger fw-semibold mt-1"><i class="bi bi-alarm"></i> Pickup deadline: Today before 9:00 PM</div>
+            </div>
+
+            <div class="p-3 bg-light rounded-3 border">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge bg-purple text-dark" style="background: #e9d5ff;"><i class="bi bi-scissors me-1"></i> Textile Recycling</span>
+                <span class="badge bg-info text-dark">Zero Landfill</span>
+              </div>
+              <div class="fw-bold text-dark">Damaged Stage Fabrics & Linen Cuts</div>
+              <div class="small text-muted"><i class="bi bi-geo-alt text-danger"></i> Station Road, Bagalkote • 45 kg</div>
+              <div class="small text-success fw-semibold mt-1"><i class="bi bi-arrow-repeat"></i> Routed to: GreenWeave Recycling Center</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Impact Counters -->
+<section class="py-5" style="margin-top: -30px; position: relative; z-index: 3;">
+  <div class="container">
+    <div class="row g-3">
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon bg-success-subtle text-success">
+            <i class="bi bi-egg-fried"></i>
+          </div>
+          <h2 class="fw-bold text-dark mb-1">{{ total_food_kg }} <small class="fs-6 text-muted">kg</small></h2>
+          <div class="text-muted small">Surplus Food Saved</div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon bg-primary-subtle text-primary">
+            <i class="bi bi-tag-fill"></i>
+          </div>
+          <h2 class="fw-bold text-dark mb-1">{{ total_clothes_pcs }} <small class="fs-6 text-muted">items</small></h2>
+          <div class="text-muted small">Clothes Shared & Recycled</div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon bg-info-subtle text-info">
+            <i class="bi bi-patch-check-fill"></i>
+          </div>
+          <h2 class="fw-bold text-dark mb-1">{{ verified_orgs_count }}</h2>
+          <div class="text-muted small">Verified Partner NGOs</div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon bg-warning-subtle text-warning">
+            <i class="bi bi-truck"></i>
+          </div>
+          <h2 class="fw-bold text-dark mb-1">{{ completed_donations }}</h2>
+          <div class="text-muted small">Successful Pickups</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill fw-semibold">Intuitive 4-Step Flow</span>
+      <h2 class="fw-bold text-dark mt-2">How Share & Reuse Works</h2>
+      <p class="text-muted mx-auto" style="max-width: 650px;">
+        Designed to handle time-critical surplus food and category-segregated clothes effortlessly.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-3">
+        <div class="p-4 rounded-4 border bg-light h-100 text-center position-relative">
+          <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center fw-bold fs-4 mb-3" style="width: 54px; height: 54px;">
+            1
+          </div>
+          <h5 class="fw-bold text-dark">Donor Lists Items</h5>
+          <p class="small text-muted mb-0">
+            Donor specifies category (Food or Clothes), quantity, storage conditions, pickup address, and urgent expiry deadlines.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="p-4 rounded-4 border bg-light h-100 text-center position-relative">
+          <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center fw-bold fs-4 mb-3" style="width: 54px; height: 54px;">
+            2
+          </div>
+          <h5 class="fw-bold text-dark">Location Matching</h5>
+          <p class="small text-muted mb-0">
+            Our Haversine distance engine calculates proximity to verified NGOs, orphanages, and textile recyclers in kilometers.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="p-4 rounded-4 border bg-light h-100 text-center position-relative">
+          <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center fw-bold fs-4 mb-3" style="width: 54px; height: 54px;">
+            3
+          </div>
+          <h5 class="fw-bold text-dark">Accept & Schedule</h5>
+          <p class="small text-muted mb-0">
+            Eligible organization accepts the request, assigns volunteer contact details, and schedules estimated arrival.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="p-4 rounded-4 border bg-light h-100 text-center position-relative">
+          <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center fw-bold fs-4 mb-3" style="width: 54px; height: 54px;">
+            4
+          </div>
+          <h5 class="fw-bold text-dark">OTP Verified Pickup</h5>
+          <p class="small text-muted mb-0">
+            Physical handover is secured using a 4-digit verification code. Both parties receive carbon impact and appreciation records.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Dual Core Innovation Section: Food vs Clothes -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-6">
+        <div class="p-4 p-md-5 rounded-4 bg-white border shadow-sm">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="badge bg-warning-subtle text-warning-emphasis fs-6 px-3 py-2 rounded-pill fw-bold">
+              <i class="bi bi-clock-history me-1"></i> Urgent Food Rescue
+            </span>
+          </div>
+          <h3 class="fw-bold text-dark mb-3">Time-Critical Food Matching</h3>
+          <p class="text-muted">
+            Cooked food is highly perishable. Unlike generic donation platforms, Share & Reuse captures:
+          </p>
+          <ul class="list-unstyled d-flex flex-column gap-2 text-secondary mb-4">
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i> <strong>Preparation Time & Expiry Deadline:</strong> Calculates exact hours remaining.</li>
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i> <strong>Thermal Condition:</strong> Hot cases, ambient, refrigerated, or frozen preservation.</li>
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i> <strong>Automated Urgency Boosting:</strong> When remaining time is &lt; 4 hours, listings trigger high-priority alerts to closest shelters.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="p-4 p-md-5 rounded-4 bg-white border shadow-sm">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="badge bg-purple text-dark fs-6 px-3 py-2 rounded-pill fw-bold" style="background: #e9d5ff;">
+              <i class="bi bi-arrow-repeat me-1"></i> Smart Clothes Routing
+            </span>
+          </div>
+          <h3 class="fw-bold text-dark mb-3">Reusable vs. Recycling Segregation</h3>
+          <p class="text-muted">
+            Clothing donations are classified by condition to ensure zero dumping at charity doors:
+          </p>
+          <ul class="list-unstyled d-flex flex-column gap-2 text-secondary mb-4">
+            <li><i class="bi bi-check-circle-fill text-primary me-2"></i> <strong>Reusable & Good Condition:</strong> Routed directly to Orphanages, Old-Age Homes & Community NGOs for direct wear.</li>
+            <li><i class="bi bi-check-circle-fill text-primary me-2"></i> <strong>Damaged / Scrap / Fabric Cuts:</strong> Automatically directed to Textile Recycling & Upcycling units for industrial reuse, avoiding landfills.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Active Listings Preview -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+      <div>
+        <span class="badge bg-success-subtle text-success px-3 py-1 rounded-pill fw-semibold">Live Availability Feed</span>
+        <h3 class="fw-bold text-dark mt-1">Recently Listed Donations</h3>
+      </div>
+      <a href="{{ url_for('login') }}" class="btn btn-outline-success">View All On Map <i class="bi bi-arrow-right"></i></a>
+    </div>
+
+    <div class="row g-4">
+      {% for don in recent_donations %}
+        <div class="col-md-6 col-lg-4">
+          <div class="app-card h-100 {% if don.food_detail and don.food_detail.is_urgent %}urgent-pulse{% endif %}">
+            <div class="position-relative" style="height: 180px; overflow: hidden; background: #e2e8f0;">
+              {% if don.image_url %}
+                <img src="{{ don.image_url }}" alt="{{ don.title }}" class="w-100 h-100 object-fit-cover">
+              {% else %}
+                <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted">
+                  <i class="bi bi-card-image fs-1"></i>
+                </div>
+              {% endif %}
+              
+              <div class="position-absolute top-0 start-0 m-3 d-flex gap-2">
+                {% if don.category == 'food' %}
+                  <span class="badge badge-food"><i class="bi bi-egg-fried me-1"></i> Food</span>
+                  {% if don.food_detail and don.food_detail.is_urgent %}
+                    <span class="badge bg-danger"><i class="bi bi-lightning-fill"></i> Urgent</span>
+                  {% endif %}
+                {% else %}
+                  <span class="badge badge-clothes"><i class="bi bi-tag me-1"></i> Clothes</span>
+                  {% if don.clothes_detail and don.clothes_detail.condition == 'damaged_recycling' %}
+                    <span class="badge badge-recycle"><i class="bi bi-recycle"></i> For Recycling</span>
+                  {% endif %}
+                {% endif %}
+              </div>
+
+              <div class="position-absolute bottom-0 end-0 m-2">
+                <span class="badge bg-dark bg-opacity-75 text-white fw-bold">
+                  {{ don.quantity }} {{ don.quantity_unit }}
+                </span>
+              </div>
+            </div>
+
+            <div class="app-card-body d-flex flex-column justify-content-between flex-grow-1">
+              <div>
+                <h5 class="fw-bold text-dark mb-1">{{ don.title }}</h5>
+                <p class="small text-muted mb-2 text-truncate-2" style="min-height: 38px;">{{ don.description }}</p>
+                <div class="small text-secondary mb-2">
+                  <i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ don.pickup_address }}, {{ don.city }}
+                </div>
+
+                {% if don.food_detail %}
+                  <div class="small mb-3">
+                    <span class="expiry-countdown badge bg-light text-dark border" data-deadline="{{ don.food_detail.expiry_deadline.isoformat() }}Z">
+                      <i class="bi bi-clock"></i> Checking expiry...
+                    </span>
+                  </div>
+                {% endif %}
+              </div>
+
+              <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                <span class="small text-muted">By {{ don.donor.full_name }}</span>
+                <a href="{{ url_for('donation_detail', donation_id=don.id) }}" class="btn btn-sm btn-outline-primary">
+                  Details <i class="bi bi-chevron-right"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <div class="col-12 text-center py-5 text-muted">
+          <i class="bi bi-inbox fs-1 mb-2"></i>
+          <p>No active donations right now. Be the first to share surplus food or clothes!</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Call to action Banner -->
+<section class="py-5 bg-dark text-white text-center">
+  <div class="container py-3">
+    <h2 class="display-6 fw-bold mb-3">Join The Zero-Waste Network in Bagalkote</h2>
+    <p class="lead text-light mb-4 opacity-75 mx-auto" style="max-width: 650px;">
+      Whether you are an individual household, a luxury hotel banquet, an orphanage sheltering 60 children, or an industrial recycler, Share & Reuse welcomes you.
+    </p>
+    <div class="d-flex justify-content-center gap-3">
+      <a href="{{ url_for('register') }}" class="btn btn-success btn-lg px-4 fw-bold">Sign Up Today</a>
+      <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg px-4">Log In to Demo</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

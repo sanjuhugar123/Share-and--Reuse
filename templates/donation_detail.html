@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+
+{% block title %}Donation Details #{{ donation.id }} - {{ donation.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  
+  <!-- Breadcrumb & Back -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div class="d-flex align-items-center gap-2">
+      {% if current_user and current_user.role == 'organization' %}
+        <a href="{{ url_for('org_dashboard') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Back to Dashboard</a>
+      {% else %}
+        <a href="{{ url_for('donor_dashboard') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Back to Dashboard</a>
+      {% endif %}
+      <span class="text-muted">/ Donation #{{ donation.id }}</span>
+    </div>
+
+    <div>
+      {% if donation.status == 'completed' %}
+        <a href="{{ url_for('certificate', donation_id=donation.id) }}" class="btn btn-outline-success btn-sm">
+          <i class="bi bi-award me-1"></i> View Impact Certificate
+        </a>
+      {% endif %}
+      <a href="{{ url_for('report_issue', donation_id=donation.id) }}" class="btn btn-outline-danger btn-sm">
+        <i class="bi bi-flag me-1"></i> Report Issue
+      </a>
+    </div>
+  </div>
+
+  <!-- Status Progress Bar -->
+  <div class="app-card mb-4 bg-white shadow-sm p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold text-dark mb-0"><i class="bi bi-truck me-2 text-primary"></i> Live Status Progression</h5>
+      <span class="badge badge-{{ donation.status }} fs-6 text-capitalize">{{ donation.status.replace('_', ' ') }}</span>
+    </div>
+
+    <div class="tracking-steps">
+      <div class="tracking-step {% if donation.status in ['available', 'requested', 'accepted', 'in_transit', 'completed'] %}completed{% endif %}">
+        <div class="tracking-icon"><i class="bi bi-check-lg"></i></div>
+        <div class="fw-bold small">1. Listed</div>
+        <div class="text-muted" style="font-size: 0.7rem;">{{ donation.created_at.strftime('%d %b, %I:%M %p') }}</div>
+      </div>
+
+      <div class="tracking-step {% if donation.status in ['accepted', 'in_transit', 'completed'] %}completed{% elif donation.status == 'requested' %}active{% endif %}">
+        <div class="tracking-icon"><i class="bi bi-building"></i></div>
+        <div class="fw-bold small">2. Accepted</div>
+        <div class="text-muted" style="font-size: 0.7rem;">Org Assigned</div>
+      </div>
+
+      <div class="tracking-step {% if donation.status in ['in_transit', 'completed'] %}completed{% elif donation.status == 'accepted' %}active{% endif %}">
+        <div class="tracking-icon"><i class="bi bi-bicycle"></i></div>
+        <div class="fw-bold small">3. Out for Pickup</div>
+        <div class="text-muted" style="font-size: 0.7rem;">En Route</div>
+      </div>
+
+      <div class="tracking-step {% if donation.status == 'completed' %}completed{% endif %}">
+        <div class="tracking-icon"><i class="bi bi-award"></i></div>
+        <div class="fw-bold small">4. Completed</div>
+        <div class="text-muted" style="font-size: 0.7rem;">Handover Done</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Details & Photos -->
+    <div class="col-lg-7">
+      <div class="app-card shadow-sm h-100">
+        <div class="position-relative" style="height: 280px; background: #e2e8f0;">
+          {% if donation.image_url %}
+            <img src="{{ donation.image_url }}" alt="{{ donation.title }}" class="w-100 h-100 object-fit-cover">
+          {% else %}
+            <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted">
+              <i class="bi bi-box fs-1"></i>
+            </div>
+          {% endif %}
+          
+          <div class="position-absolute top-0 start-0 m-3 d-flex gap-2">
+            {% if donation.category == 'food' %}
+              <span class="badge badge-food fs-6"><i class="bi bi-egg-fried"></i> Food</span>
+              {% if donation.food_detail and donation.food_detail.is_urgent %}
+                <span class="badge bg-danger fs-6"><i class="bi bi-lightning-fill"></i> Urgent Rescue</span>
+              {% endif %}
+            {% else %}
+              <span class="badge badge-clothes fs-6"><i class="bi bi-tag"></i> Clothes</span>
+              {% if donation.clothes_detail and donation.clothes_detail.condition == 'damaged_recycling' %}
+                <span class="badge badge-recycle fs-6"><i class="bi bi-recycle"></i> For Recycling</span>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="app-card-body p-4">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h3 class="fw-bold text-dark mb-1">{{ donation.title }}</h3>
+              <div class="text-muted small">
+                Posted by <strong>{{ donation.donor.full_name }}</strong> ({{ donation.donor.donor_type or 'Donor' }})
+              </div>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-dark fs-5 text-white">{{ donation.quantity }} {{ donation.quantity_unit }}</span>
+            </div>
+          </div>
+
+          <p class="text-secondary mb-4">{{ donation.description }}</p>
+
+          <!-- Food Specific Information -->
+          {% if donation.category == 'food' and donation.food_detail %}
+            <div class="p-3 rounded-4 bg-warning bg-opacity-10 border border-warning mb-4">
+              <h6 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle-fill text-warning me-2"></i> Food Specifications</h6>
+              <div class="row g-2 small">
+                <div class="col-6"><strong>Food Type:</strong> <span class="text-capitalize">{{ donation.food_detail.food_type }}</span></div>
+                <div class="col-6"><strong>Storage:</strong> <span class="text-capitalize">{{ donation.food_detail.storage_condition }}</span></div>
+                <div class="col-6"><strong>Preparation Time:</strong> {{ donation.food_detail.preparation_time.strftime('%d %b, %I:%M %p') if donation.food_detail.preparation_time else 'N/A' }}</div>
+                <div class="col-6">
+                  <strong>Pickup Deadline:</strong> 
+                  <span class="text-danger fw-bold">{{ donation.food_detail.expiry_deadline.strftime('%d %b, %I:%M %p') }}</span>
+                </div>
+                {% if donation.food_detail.allergen_info %}
+                  <div class="col-12 mt-2"><strong>Allergen / Diet:</strong> {{ donation.food_detail.allergen_info }}</div>
+                {% endif %}
+              </div>
+            </div>
+          {% endif %}
+
+          <!-- Clothes Specific Information -->
+          {% if donation.category == 'clothes' and donation.clothes_detail %}
+            <div class="p-3 rounded-4 bg-primary bg-opacity-10 border border-primary mb-4">
+              <h6 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle-fill text-primary me-2"></i> Clothes & Textile Specifications</h6>
+              <div class="row g-2 small">
+                <div class="col-6">
+                  <strong>Condition:</strong> 
+                  {% if donation.clothes_detail.condition == 'reusable' %}
+                    <span class="text-success fw-bold">Reusable (Wearable)</span>
+                  {% else %}
+                    <span class="text-purple fw-bold">Damaged / Scrap (For Recycling)</span>
+                  {% endif %}
+                </div>
+                <div class="col-6"><strong>Class:</strong> <span class="text-capitalize">{{ donation.clothes_detail.clothes_type }}</span></div>
+                <div class="col-6"><strong>Target Demographic:</strong> <span class="text-capitalize">{{ donation.clothes_detail.target_age_group }}</span></div>
+                <div class="col-6"><strong>Hygienically Washed:</strong> {{ 'Yes' if donation.clothes_detail.clean_washed else 'No' }}</div>
+              </div>
+            </div>
+          {% endif %}
+
+          <!-- Location Info -->
+          <div class="p-3 rounded-3 bg-light border mb-3">
+            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-geo-alt-fill text-danger me-2"></i> Pickup Address</h6>
+            <div>{{ donation.pickup_address }}, {{ donation.city }}</div>
+            <div class="small text-muted">Coordinates: {{ donation.latitude }}, {{ donation.longitude }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Verification Code & Organization Info -->
+    <div class="col-lg-5">
+      
+      <!-- Verification PIN Display for Donor -->
+      {% if current_user and current_user.id == donation.donor_id %}
+        <div class="app-card shadow-sm mb-4">
+          <div class="app-card-body p-4 text-center">
+            <h6 class="text-muted fw-semibold mb-2">Secure Pickup Handover PIN</h6>
+            <div class="otp-display-box my-3">
+              <div class="otp-code">{{ donation.verification_pin }}</div>
+              <small class="text-muted">Give this 4-digit code to the collection driver to confirm handover</small>
+            </div>
+            <div class="small text-success">
+              <i class="bi bi-shield-check"></i> Prevents false claims and ensures safe receipt
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Assigned Partner / Organization Details -->
+      {% if donation.assignment and donation.assignment.organization %}
+        {% set org = donation.assignment.organization %}
+        <div class="app-card shadow-sm mb-4">
+          <div class="app-card-header bg-white">
+            <h6 class="fw-bold mb-0"><i class="bi bi-building text-primary me-2"></i> Assigned Receiver Organization</h6>
+          </div>
+          <div class="app-card-body p-4">
+            <h5 class="fw-bold text-dark mb-1">{{ org.org_name }}</h5>
+            <div class="badge bg-light text-dark border mb-3 text-capitalize">{{ org.org_type.replace('_', ' ') }}</div>
+            
+            <p class="small text-muted mb-3">{{ org.description }}</p>
+
+            <div class="p-3 bg-light rounded-3 border mb-3 small">
+              <div class="mb-1"><strong>Contact Phone:</strong> <a href="tel:{{ org.user.phone }}" class="text-decoration-none">{{ org.user.phone }}</a></div>
+              <div class="mb-1"><strong>Registration:</strong> {{ org.registration_no }}</div>
+              {% if donation.assignment.volunteer_name %}
+                <div class="mb-1"><strong>Volunteer:</strong> {{ donation.assignment.volunteer_name }} ({{ donation.assignment.volunteer_phone }})</div>
+              {% endif %}
+              {% if donation.assignment.scheduled_pickup_time %}
+                <div><strong>Scheduled Arrival:</strong> {{ donation.assignment.scheduled_pickup_time.strftime('%d %b, %I:%M %p') }}</div>
+              {% endif %}
+            </div>
+
+            {% if donation.assignment.notes %}
+              <div class="small text-secondary mb-3">
+                <strong>Pickup Notes:</strong> {{ donation.assignment.notes }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% else %}
+        <!-- If not yet assigned, show prompt to find nearby orgs -->
+        <div class="app-card shadow-sm mb-4">
+          <div class="app-card-body p-4 text-center">
+            <i class="bi bi-radar fs-1 text-primary d-block mb-3"></i>
+            <h5 class="fw-bold text-dark mb-2">Looking for a Receiver</h5>
+            <p class="small text-muted mb-4">
+              This donation is currently open in the local Bagalkote network. You can view nearby matching organizations and send an instant direct request.
+            </p>
+            <a href="{{ url_for('nearby_orgs', donation_id=donation.id) }}" class="btn btn-primary-custom w-100 py-2">
+              <i class="bi bi-geo-alt me-1"></i> View Nearby Matching Orgs
+            </a>
+          </div>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}

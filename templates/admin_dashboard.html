@@ -1,0 +1,374 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Console - Share & Reuse{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  
+  <!-- Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 bg-white p-4 rounded-4 border shadow-sm">
+    <div class="d-flex align-items-center gap-3">
+      <div class="stat-icon bg-danger-subtle text-danger mb-0" style="width: 58px; height: 58px;">
+        <i class="bi bi-shield-check fs-3"></i>
+      </div>
+      <div>
+        <h3 class="fw-bold text-dark mb-1">System Administration & Analytics</h3>
+        <p class="text-muted small mb-0">Platform oversight, NGO verification, user compliance, and impact metrics</p>
+      </div>
+    </div>
+
+    <div>
+      <span class="badge bg-success px-3 py-2 fs-6">System Status: Healthy</span>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-primary-subtle text-primary">
+          <i class="bi bi-people-fill"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-1">{{ total_users }}</h3>
+        <div class="text-muted small">{{ total_donors }} Donors • {{ total_orgs }} Orgs</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-warning-subtle text-warning">
+          <i class="bi bi-patch-exclamation-fill"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-1">{{ pending_orgs|length }}</h3>
+        <div class="text-muted small">Pending Org Verifications</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-success-subtle text-success">
+          <i class="bi bi-egg-fried"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-1">{{ total_food_kg }} <small class="fs-6">kg</small></h3>
+        <div class="text-muted small">Food Rescued Total</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon bg-info-subtle text-info">
+          <i class="bi bi-tag-fill"></i>
+        </div>
+        <h3 class="fw-bold text-dark mb-1">{{ total_clothes_pcs }}</h3>
+        <div class="text-muted small">Clothes Pieces Diverted</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Chart.js Graphs -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-6">
+      <div class="app-card shadow-sm h-100">
+        <div class="app-card-header bg-white">
+          <span class="fw-bold text-dark"><i class="bi bi-pie-chart-fill text-primary me-2"></i> Donations by Category</span>
+        </div>
+        <div class="app-card-body p-4 d-flex align-items-center justify-content-center" style="height: 320px;">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="app-card shadow-sm h-100">
+        <div class="app-card-header bg-white">
+          <span class="fw-bold text-dark"><i class="bi bi-bar-chart-fill text-success me-2"></i> Distribution Pipeline Status</span>
+        </div>
+        <div class="app-card-body p-4 d-flex align-items-center justify-content-center" style="height: 320px;">
+          <canvas id="pipelineChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 1: Pending Organization Verification Queue -->
+  <div class="app-card shadow-sm mb-4">
+    <div class="app-card-header bg-white d-flex justify-content-between align-items-center">
+      <span class="fw-bold text-dark"><i class="bi bi-patch-check text-warning me-2"></i> Organization Verification Requests</span>
+      <span class="badge bg-warning text-dark">{{ pending_orgs|length }} Awaiting Review</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th scope="col" class="ps-4">Organization Name</th>
+            <th scope="col">Type</th>
+            <th scope="col">Reg / Trust No.</th>
+            <th scope="col">Location & Phone</th>
+            <th scope="col">Accepts</th>
+            <th scope="col" class="text-end pe-4">Verification Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p_org in pending_orgs %}
+            <tr>
+              <td class="ps-4">
+                <div class="fw-bold text-dark">{{ p_org.org_name }}</div>
+                <div class="small text-muted text-truncate" style="max-width: 260px;">{{ p_org.description }}</div>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border text-capitalize">{{ p_org.org_type.replace('_', ' ') }}</span>
+              </td>
+              <td><code>{{ p_org.registration_no }}</code></td>
+              <td>
+                <div>{{ p_org.user.city }}</div>
+                <div class="small text-muted">{{ p_org.user.phone }}</div>
+              </td>
+              <td>
+                <div class="small">
+                  {% if p_org.accepts_food %}<span class="badge badge-food me-1">Food</span>{% endif %}
+                  {% if p_org.accepts_clothes %}<span class="badge badge-clothes me-1">Clothes</span>{% endif %}
+                  {% if p_org.accepts_damaged_clothes %}<span class="badge badge-recycle">Recycler</span>{% endif %}
+                </div>
+              </td>
+              <td class="text-end pe-4">
+                <form method="POST" action="{{ url_for('verify_organization', org_id=p_org.id) }}" class="d-inline">
+                  <input type="hidden" name="action" value="approve">
+                  <button type="submit" class="btn btn-sm btn-success px-3 me-1">
+                    <i class="bi bi-check-lg"></i> Approve
+                  </button>
+                </form>
+                <form method="POST" action="{{ url_for('verify_organization', org_id=p_org.id) }}" class="d-inline">
+                  <input type="hidden" name="action" value="reject">
+                  <button type="submit" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-x-lg"></i> Reject
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted">
+                <i class="bi bi-check2-circle text-success fs-3 d-block mb-1"></i>
+                All organization applications are verified! No pending reviews.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Section 2: Recent Complaints & Reports -->
+  <div class="app-card shadow-sm mb-4">
+    <div class="app-card-header bg-white d-flex justify-content-between align-items-center">
+      <span class="fw-bold text-dark"><i class="bi bi-flag-fill text-danger me-2"></i> Complaints & Quality Feedback</span>
+      <span class="badge bg-danger">{{ recent_reports|length }} Reports</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th scope="col" class="ps-4">Reporter</th>
+            <th scope="col">Type</th>
+            <th scope="col">Subject & Details</th>
+            <th scope="col">Date</th>
+            <th scope="col">Status</th>
+            <th scope="col" class="text-end pe-4">Resolution</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for rep in recent_reports %}
+            <tr>
+              <td class="ps-4">
+                <div class="fw-bold text-dark">{{ rep.reporter.full_name }}</div>
+                <div class="small text-muted">{{ rep.reporter.email }}</div>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border text-capitalize">{{ rep.report_type }}</span>
+              </td>
+              <td>
+                <div class="fw-semibold text-dark">{{ rep.subject }}</div>
+                <div class="small text-muted text-truncate" style="max-width: 300px;">{{ rep.message }}</div>
+                {% if rep.admin_response %}
+                  <div class="small text-success mt-1"><strong>Response:</strong> {{ rep.admin_response }}</div>
+                {% endif %}
+              </td>
+              <td class="small text-muted">{{ rep.created_at.strftime('%d %b, %I:%M %p') }}</td>
+              <td>
+                {% if rep.status == 'resolved' %}
+                  <span class="badge bg-success-subtle text-success">Resolved</span>
+                {% else %}
+                  <span class="badge bg-warning-subtle text-warning-emphasis">Pending</span>
+                {% endif %}
+              </td>
+              <td class="text-end pe-4">
+                {% if rep.status == 'pending' %}
+                  <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#resolveModal{{ rep.id }}">
+                    Respond
+                  </button>
+                {% else %}
+                  <span class="small text-muted"><i class="bi bi-check2-all"></i> Closed</span>
+                {% endif %}
+              </td>
+            </tr>
+
+            <!-- Modal for resolving report -->
+            <div class="modal fade" id="resolveModal{{ rep.id }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow">
+                  <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-dark">Address Report #{{ rep.id }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <form method="POST" action="{{ url_for('resolve_report', report_id=rep.id) }}">
+                    <div class="modal-body p-4">
+                      <div class="p-3 bg-light rounded border mb-3">
+                        <div class="fw-bold">{{ rep.subject }}</div>
+                        <div class="small text-muted">{{ rep.message }}</div>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">Admin Response / Resolution Note</label>
+                        <textarea class="form-control" name="admin_response" rows="3" placeholder="Enter resolution details..." required></textarea>
+                      </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                      <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                      <button type="submit" class="btn btn-success px-4">Mark Resolved</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% else %}
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted">No reports submitted.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Section 3: Registered Users Oversight -->
+  <div class="app-card shadow-sm">
+    <div class="app-card-header bg-white d-flex justify-content-between align-items-center">
+      <span class="fw-bold text-dark"><i class="bi bi-people text-secondary me-2"></i> User Directory & Access Control</span>
+      <span class="badge bg-secondary">{{ users_list|length }} Users Shown</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th scope="col" class="ps-4">User / Organization Name</th>
+            <th scope="col">Role / Subtype</th>
+            <th scope="col">Email & Phone</th>
+            <th scope="col">City & Location</th>
+            <th scope="col">Account Status</th>
+            <th scope="col" class="text-end pe-4">Access Toggle</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users_list %}
+            <tr>
+              <td class="ps-4">
+                <div class="fw-bold text-dark">{{ u.full_name }}</div>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border text-capitalize">{{ u.role }}</span>
+                {% if u.donor_type %}
+                  <div class="small text-muted text-capitalize">{{ u.donor_type }}</div>
+                {% endif %}
+              </td>
+              <td>
+                <div>{{ u.email }}</div>
+                <div class="small text-muted">{{ u.phone }}</div>
+              </td>
+              <td>
+                <div>{{ u.city }}</div>
+                <div class="small text-muted">{{ u.address }}</div>
+              </td>
+              <td>
+                {% if u.is_active %}
+                  <span class="badge bg-success-subtle text-success">Active</span>
+                {% else %}
+                  <span class="badge bg-danger-subtle text-danger">Suspended</span>
+                {% endif %}
+              </td>
+              <td class="text-end pe-4">
+                {% if u.role != 'admin' %}
+                  <form method="POST" action="{{ url_for('toggle_user', user_id=u.id) }}" class="d-inline">
+                    {% if u.is_active %}
+                      <button type="submit" class="btn btn-sm btn-outline-danger" title="Suspend User">Suspend</button>
+                    {% else %}
+                      <button type="submit" class="btn btn-sm btn-outline-success" title="Activate User">Activate</button>
+                    {% endif %}
+                  </form>
+                {% else %}
+                  <span class="badge bg-dark">Superadmin</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // Chart 1: Category Breakdown
+  const ctxCat = document.getElementById('categoryChart').getContext('2d');
+  new Chart(ctxCat, {
+    type: 'doughnut',
+    data: {
+      labels: ['Food Donations', 'Clothes & Textiles'],
+      datasets: [{
+        data: [{{ food_donations }}, {{ clothes_donations }}],
+        backgroundColor: ['#eab308', '#6366f1'],
+        borderWidth: 2,
+        borderColor: '#ffffff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom' }
+      }
+    }
+  });
+
+  // Chart 2: Pipeline Distribution Status
+  const ctxPipe = document.getElementById('pipelineChart').getContext('2d');
+  new Chart(ctxPipe, {
+    type: 'bar',
+    data: {
+      labels: ['Completed', 'Total Listings', 'Pending Verification'],
+      datasets: [{
+        label: 'Count',
+        data: [{{ completed_donations }}, {{ total_donations }}, {{ pending_orgs|length }}],
+        backgroundColor: ['#16a34a', '#3b82f6', '#f59e0b'],
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+});
+</script>
+{% endblock %}

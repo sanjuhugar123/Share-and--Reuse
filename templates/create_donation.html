@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Donation - Share & Reuse{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-9">
+      
+      <!-- Page Header -->
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <a href="{{ url_for('donor_dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-circle" style="width: 36px; height: 36px;">
+          <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+          <h2 class="fw-bold text-dark mb-0">List Surplus Donation</h2>
+          <p class="text-muted small mb-0">Fill in accurate details to enable intelligent proximity & urgency matching</p>
+        </div>
+      </div>
+
+      <div class="app-card shadow-sm border-0 rounded-4">
+        <div class="app-card-body p-4 p-md-5">
+          <form method="POST" action="{{ url_for('create_donation') }}" enctype="multipart/form-data" id="donation-form">
+            
+            <!-- Category Selection Toggle -->
+            <label class="form-label fw-bold text-dark fs-5 mb-2">1. Select Donation Category</label>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <input type="radio" class="btn-check" name="category" id="category-food" value="food" checked>
+                <label class="btn btn-outline-warning w-100 p-4 text-start rounded-4 h-100 position-relative" for="category-food">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                      <i class="bi bi-egg-fried fs-3"></i>
+                    </div>
+                    <div>
+                      <h5 class="fw-bold text-dark mb-1">Surplus Food</h5>
+                      <div class="small text-muted">Cooked banquet food, bakery items, or packaged groceries</div>
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              <div class="col-md-6">
+                <input type="radio" class="btn-check" name="category" id="category-clothes" value="clothes">
+                <label class="btn btn-outline-primary w-100 p-4 text-start rounded-4 h-100 position-relative" for="category-clothes">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                      <i class="bi bi-tag-fill fs-3"></i>
+                    </div>
+                    <div>
+                      <h5 class="fw-bold text-dark mb-1">Clothes & Fabric</h5>
+                      <div class="small text-muted">Reusable apparel for shelters, or damaged fabric for recyclers</div>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- General Fields -->
+            <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">2. General Description</h5>
+            
+            <div class="row g-3 mb-4">
+              <div class="col-md-8">
+                <label class="form-label small fw-semibold text-muted">Donation Title *</label>
+                <input type="text" class="form-control" name="title" placeholder="e.g. 50 Servings Lunch Buffet Veg Meals / 2 Bags Clean Winter Wear" required>
+              </div>
+
+              <div class="col-md-2">
+                <label class="form-label small fw-semibold text-muted">Quantity *</label>
+                <input type="number" step="0.5" min="0.5" class="form-control" name="quantity" value="10" required>
+              </div>
+
+              <div class="col-md-2">
+                <label class="form-label small fw-semibold text-muted">Unit *</label>
+                <select class="form-select" name="quantity_unit">
+                  <option value="kg">kg (weight)</option>
+                  <option value="servings">servings / meals</option>
+                  <option value="pieces">pieces / items</option>
+                  <option value="boxes">boxes / bags</option>
+                </select>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label small fw-semibold text-muted">Detailed Description *</label>
+                <textarea class="form-control" name="description" rows="3" placeholder="Provide helpful details (e.g. items included, packing style, hygiene notes, handling instructions)..." required></textarea>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label small fw-semibold text-muted">Upload Photo (Optional)</label>
+                <input type="file" class="form-control" name="image" accept="image/*">
+                <small class="text-muted">A clear photo helps organizations quickly assess volume and quality.</small>
+              </div>
+            </div>
+
+            <!-- Category Specific Fields: FOOD -->
+            <div id="food-specific-fields" class="p-4 rounded-4 bg-warning bg-opacity-10 border border-warning mb-4">
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <i class="bi bi-clock-history fs-4 text-warning-emphasis"></i>
+                <h5 class="fw-bold text-dark mb-0">Food Preservation & Urgency Specifications</h5>
+              </div>
+              <p class="small text-muted mb-3">
+                Crucial for urgent food matching algorithm. Hot cooked food is automatically flagged as urgent when pickup deadline is within 4 hours.
+              </p>
+
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold text-dark">Food Type *</label>
+                  <select class="form-select" name="food_type">
+                    <option value="cooked">Cooked Hot Meal (Banquet / Hotel)</option>
+                    <option value="packaged">Packaged / Dry Rations (Groceries)</option>
+                    <option value="bakery">Bakery / Bread / Snacks</option>
+                    <option value="raw_produce">Fresh Fruits / Vegetables</option>
+                  </select>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold text-dark">Storage Condition *</label>
+                  <select class="form-select" name="storage_condition">
+                    <option value="hot">Hot Thermal Box / Chafing Dish</option>
+                    <option value="ambient" selected>Ambient / Room Temperature</option>
+                    <option value="refrigerated">Refrigerated (2°C - 5°C)</option>
+                    <option value="frozen">Deep Frozen (&lt; 0°C)</option>
+                  </select>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold text-dark">Dietary / Allergen Notes</label>
+                  <input type="text" class="form-control" name="allergen_info" placeholder="e.g. 100% Pure Veg, Contains Dairy">
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-dark">Food Preparation Time</label>
+                  <input type="datetime-local" class="form-control" name="preparation_time" value="{{ suggested_prep }}">
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-dark">
+                    Available / Pickup Deadline * <span class="badge bg-danger ms-1">Urgent Trigger</span>
+                  </label>
+                  <input type="datetime-local" class="form-control border-danger" name="expiry_deadline" value="{{ suggested_expiry }}" required>
+                  <small class="text-danger">Food must be collected before this timestamp.</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Category Specific Fields: CLOTHES -->
+            <div id="clothes-specific-fields" class="p-4 rounded-4 bg-primary bg-opacity-10 border border-primary mb-4" style="display: none;">
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <i class="bi bi-recycle fs-4 text-primary"></i>
+                <h5 class="fw-bold text-dark mb-0">Clothes Condition & Routing Target</h5>
+              </div>
+              <p class="small text-muted mb-3">
+                Smart routing automatically sends reusable apparel to Orphanages/Shelters, and damaged textiles to Upcycling/Recycling Plants.
+              </p>
+
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-dark">Condition Segregation *</label>
+                  <select class="form-select fw-semibold" name="condition" id="clothes-condition">
+                    <option value="reusable" selected>✨ Reusable (Good condition - for NGOs & Orphanages)</option>
+                    <option value="damaged_recycling">♻️ Damaged / Torn Scrap (For Textile Recyclers)</option>
+                  </select>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-dark">Clothing Classification *</label>
+                  <select class="form-select" name="clothes_type">
+                    <option value="mixed">Mixed Apparel</option>
+                    <option value="kids">Children & Toddlers</option>
+                    <option value="winterwear">Winterwear / Blankets / Sweaters</option>
+                    <option value="men">Men's Apparel</option>
+                    <option value="women">Women's Apparel & Sarees</option>
+                  </select>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-dark">Target Demographic</label>
+                  <select class="form-select" name="target_age_group">
+                    <option value="all">All Ages</option>
+                    <option value="children">Children (Under 15)</option>
+                    <option value="adults">Adults</option>
+                    <option value="elderly">Elderly / Senior Citizens</option>
+                  </select>
+                </div>
+
+                <div class="col-md-6 d-flex align-items-center">
+                  <div class="form-check pt-3">
+                    <input class="form-check-input" type="checkbox" name="clean_washed" id="clean_washed" checked>
+                    <label class="form-check-label small fw-semibold" for="clean_washed">
+                      Items are washed and hygienic for distribution
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Location & Map -->
+            <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">3. Pickup Location & Proximity</h5>
+            
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-muted">Quick Bagalkote Location Preset</label>
+              <select class="form-select bg-light" id="quick-landmark">
+                <option value="">-- Choose Bagalkote Landmark or enter custom --</option>
+                <option value="busstand" data-address="Station Road, Near Bus Stand, Bagalkote" data-lat="16.1820" data-lon="75.6940">Station Road / Bus Stand (Hotel Basaveshwar Area)</option>
+                <option value="vidyagiri" data-address="Vidyagiri 4th Cross, Bagalkote" data-lat="16.1750" data-lon="75.6880">Vidyagiri (Function Halls & BVVS Campus)</option>
+                <option value="navanagar" data-address="Sector 12, Navanagar, Bagalkote" data-lat="16.1640" data-lon="75.6580">Navanagar Sector 12 (Residential & Shelters)</option>
+                <option value="apmc" data-address="APMC Yard Road, Bagalkote" data-lat="16.1890" data-lon="75.7010">APMC Market Area</option>
+                <option value="kiadb" data-address="KIADB Industrial Area, Bagalkote" data-lat="16.1950" data-lon="75.7150">KIADB Industrial Area (Recycling Hub)</option>
+              </select>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-8">
+                <label class="form-label small fw-semibold text-muted">Street Pickup Address *</label>
+                <input type="text" class="form-control" id="pickup_address" name="pickup_address" value="{{ user.address }}" required>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold text-muted">City *</label>
+                <input type="text" class="form-control" name="city" value="{{ user.city }}" required>
+              </div>
+
+              <div class="col-md-5">
+                <label class="form-label small fw-semibold text-muted">Latitude</label>
+                <input type="number" step="any" class="form-control" id="latitude" name="latitude" value="{{ user.latitude or 16.1853 }}" required>
+              </div>
+
+              <div class="col-md-5">
+                <label class="form-label small fw-semibold text-muted">Longitude</label>
+                <input type="number" step="any" class="form-control" id="longitude" name="longitude" value="{{ user.longitude or 75.6968 }}" required>
+              </div>
+
+              <div class="col-md-2 d-flex align-items-end">
+                <button type="button" class="btn btn-outline-secondary w-100" id="btn-get-gps">
+                  <i class="bi bi-geo-alt"></i> GPS
+                </button>
+              </div>
+            </div>
+
+            <!-- Map Picker Visual -->
+            <div class="mb-4">
+              <label class="form-label small fw-semibold text-muted">Click on Map to Adjust Pin Location:</label>
+              <div id="map-picker"></div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+              <a href="{{ url_for('donor_dashboard') }}" class="btn btn-outline-secondary px-4">Cancel</a>
+              <button type="submit" class="btn btn-primary-custom px-5 py-3 fw-bold fs-6">
+                <i class="bi bi-search me-1"></i> Post & Find Nearby Organizations
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let pickerMap, pickerMarker;
+
+document.addEventListener('DOMContentLoaded', function () {
+  const initLat = parseFloat(document.getElementById('latitude').value) || 16.1853;
+  const initLon = parseFloat(document.getElementById('longitude').value) || 75.6968;
+
+  pickerMap = L.map('map-picker').setView([initLat, initLon], 14);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(pickerMap);
+
+  pickerMarker = L.marker([initLat, initLon], { draggable: true }).addTo(pickerMap);
+
+  pickerMarker.on('dragend', function (e) {
+    const coord = e.target.getLatLng();
+    document.getElementById('latitude').value = coord.lat.toFixed(6);
+    document.getElementById('longitude').value = coord.lng.toFixed(6);
+  });
+
+  pickerMap.on('click', function (e) {
+    pickerMarker.setLatLng(e.latlng);
+    document.getElementById('latitude').value = e.latlng.lat.toFixed(6);
+    document.getElementById('longitude').value = e.latlng.lng.toFixed(6);
+  });
+});
+
+function updateMapMarker(lat, lon) {
+  if (pickerMap && pickerMarker) {
+    pickerMarker.setLatLng([lat, lon]);
+    pickerMap.setView([lat, lon], 14);
+  }
+}
+</script>
+{% endblock %}

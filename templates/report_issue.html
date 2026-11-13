@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Submit Report or Feedback - Share & Reuse{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+      <div class="app-card shadow-sm border-0 rounded-4">
+        <div class="app-card-header bg-white text-center py-4 border-0">
+          <div class="stat-icon bg-danger-subtle text-danger mx-auto mb-2" style="width: 52px; height: 52px;">
+            <i class="bi bi-chat-dots fs-3"></i>
+          </div>
+          <h3 class="fw-bold text-dark mb-1">Feedback & Issue Reporting</h3>
+          <p class="text-muted small mb-0">Help us maintain quality, hygiene, and timely collection across Bagalkote</p>
+        </div>
+
+        <div class="app-card-body px-4 py-3">
+          <form method="POST" action="{{ url_for('report_issue') }}">
+            {% if donation_id %}
+              <input type="hidden" name="donation_id" value="{{ donation_id }}">
+              <div class="alert alert-light border small mb-3">
+                <i class="bi bi-info-circle text-primary me-1"></i> Reporting in reference to <strong>Donation #{{ donation_id }}</strong>
+              </div>
+            {% endif %}
+
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-secondary">Report Category *</label>
+              <select class="form-select" name="report_type" required>
+                <option value="complaint">Collection Delay / Driver No-Show</option>
+                <option value="food_quality">Food Packaging or Hygiene Observation</option>
+                <option value="wrong_clothes">Clothing Condition Misclassification</option>
+                <option value="appreciation">Appreciation / Volunteer Praise</option>
+                <option value="feedback">General Platform Suggestion</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-secondary">Subject Summary *</label>
+              <input type="text" class="form-control" name="subject" placeholder="Brief subject of the concern or note" required>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label small fw-semibold text-secondary">Detailed Message *</label>
+              <textarea class="form-control" name="message" rows="4" placeholder="Describe the incident, timings, or suggestions..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary-custom w-100 py-3 fw-bold">
+              <i class="bi bi-send me-1"></i> Submit to Admin Desk
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

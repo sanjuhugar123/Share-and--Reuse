@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Share & Reuse Platform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7 col-md-9">
+      <div class="app-card shadow-lg border-0 rounded-4">
+        <div class="app-card-header bg-white text-center py-4 border-0">
+          <div class="navbar-brand-badge mb-2">
+            <i class="bi bi-person-plus-fill fs-4"></i>
+          </div>
+          <h3 class="fw-bold text-dark mb-1">Join the Share & Reuse Network</h3>
+          <p class="text-muted small mb-0">Help reduce hunger and landfill waste in your community</p>
+        </div>
+
+        <div class="app-card-body px-4 py-3">
+          <form method="POST" action="{{ url_for('register') }}" id="register-form">
+            
+            <!-- Step 1: Select Role -->
+            <label class="form-label fw-bold text-dark mb-2">Register As:</label>
+            <div class="row g-2 mb-4">
+              <div class="col-6">
+                <input type="radio" class="btn-check" name="role" id="role-donor" value="donor" checked onchange="toggleRoleFields()">
+                <label class="btn btn-outline-success w-100 py-3 text-center rounded-3 h-100 d-flex flex-column align-items-center justify-content-center" for="role-donor">
+                  <i class="bi bi-gift-fill fs-3 mb-1"></i>
+                  <span class="fw-bold">Donor</span>
+                  <small class="text-muted" style="font-size: 0.75rem;">Hotel, Hall, Citizen, College</small>
+                </label>
+              </div>
+
+              <div class="col-6">
+                <input type="radio" class="btn-check" name="role" id="role-org" value="organization" onchange="toggleRoleFields()">
+                <label class="btn btn-outline-primary w-100 py-3 text-center rounded-3 h-100 d-flex flex-column align-items-center justify-content-center" for="role-org">
+                  <i class="bi bi-building fs-3 mb-1"></i>
+                  <span class="fw-bold">Organization</span>
+                  <small class="text-muted" style="font-size: 0.75rem;">NGO, Orphanage, Recycler</small>
+                </label>
+              </div>
+            </div>
+
+            <!-- Common Fields -->
+            <h6 class="fw-bold text-secondary border-bottom pb-2 mb-3">Basic Information</h6>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-muted">Full Name / Primary Contact</label>
+                <input type="text" class="form-control" name="full_name" placeholder="e.g. Ramesh Patil / Grand Palace Hotel" required>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-muted">Email Address (Login ID)</label>
+                <input type="email" class="form-control" name="email" placeholder="contact@example.com" required>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-muted">Phone Number</label>
+                <input type="tel" class="form-control" name="phone" placeholder="98XXXXXXXX" required>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold text-muted">Account Password</label>
+                <input type="password" class="form-control" name="password" placeholder="Create strong password" required>
+              </div>
+            </div>
+
+            <!-- Donor Specific Fields -->
+            <div id="donor-section">
+              <h6 class="fw-bold text-secondary border-bottom pb-2 mb-3">Donor Category</h6>
+              <div class="mb-3">
+                <label class="form-label small fw-semibold text-muted">What type of donor are you?</label>
+                <select class="form-select" name="donor_type" id="donor_type">
+                  <option value="hotel">Hotel / Restaurant</option>
+                  <option value="function_hall">Function / Marriage Hall</option>
+                  <option value="college">College / University Hostel</option>
+                  <option value="person">Individual Citizen</option>
+                  <option value="company">Company / Corporate Office</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Organization Specific Fields -->
+            <div id="org-section" style="display: none;">
+              <h6 class="fw-bold text-secondary border-bottom pb-2 mb-3">Organization Profile & Capabilities</h6>
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-muted">Organization Name</label>
+                  <input type="text" class="form-control" name="org_name" placeholder="e.g. Sneha Deepa Trust">
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-muted">Organization Classification</label>
+                  <select class="form-select" name="org_type">
+                    <option value="orphanage">Orphanage / Children Shelter</option>
+                    <option value="old_age_home">Old Age Home</option>
+                    <option value="food_bank">Food Bank / Redistribution Network</option>
+                    <option value="recycler">Textile Recycler / Upcycling Center</option>
+                    <option value="ngo">Community Welfare NGO</option>
+                  </select>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-muted">Govt / Trust Registration Number</label>
+                  <input type="text" class="form-control" name="registration_no" placeholder="e.g. TR-BGK-2021-998">
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-muted">Capacity Note</label>
+                  <input type="text" class="form-control" name="capacity_note" placeholder="e.g. Feeds up to 80 children daily">
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label small fw-semibold text-muted">Brief Mission & Activities</label>
+                  <textarea class="form-control" name="description" rows="2" placeholder="Describe the community work your organization performs..."></textarea>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label small fw-semibold text-muted d-block">Items You Can Accept:</label>
+                  <div class="d-flex flex-wrap gap-4 p-3 bg-light rounded-3 border">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" name="accepts_food" id="acc_food" checked>
+                      <label class="form-check-label fw-semibold" for="acc_food">Surplus Food</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" name="accepts_clothes" id="acc_clothes" checked>
+                      <label class="form-check-label fw-semibold" for="acc_clothes">Reusable Clothes</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" name="accepts_damaged_clothes" id="acc_scrap">
+                      <label class="form-check-label fw-semibold text-purple" for="acc_scrap">
+                        <i class="bi bi-recycle text-purple"></i> Damaged Clothes / Scrap (For Recyclers)
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Location Coordinates & Address -->
+            <h6 class="fw-bold text-secondary border-bottom pb-2 mb-3">Location & Dispatch Coordinates</h6>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-muted">Quick Landmark Preset (Bagalkote)</label>
+              <select class="form-select bg-light" id="quick-landmark">
+                <option value="">-- Choose Bagalkote Landmark or enter custom --</option>
+                <option value="navanagar" data-address="Sector 12, Navanagar, Bagalkote" data-lat="16.1640" data-lon="75.6580">Navanagar Sector 12 (16.1640, 75.6580)</option>
+                <option value="vidyagiri" data-address="Near BVVS Campus, Vidyagiri, Bagalkote" data-lat="16.1750" data-lon="75.6880">Vidyagiri (16.1750, 75.6880)</option>
+                <option value="busstand" data-address="Station Road, Near Bus Stand, Bagalkote" data-lat="16.1820" data-lon="75.6940">Station Road / Bus Stand (16.1820, 75.6940)</option>
+                <option value="apmc" data-address="APMC Yard Road, Bagalkote" data-lat="16.1890" data-lon="75.7010">APMC Yard Road (16.1890, 75.7010)</option>
+                <option value="kiadb" data-address="KIADB Industrial Area, Bagalkote" data-lat="16.1950" data-lon="75.7150">KIADB Industrial Area (16.1950, 75.7150)</option>
+              </select>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-8">
+                <label class="form-label small fw-semibold text-muted">Street Address</label>
+                <input type="text" class="form-control" id="pickup_address" name="address" placeholder="Door No, Street, Landmark" required>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label small fw-semibold text-muted">City</label>
+                <input type="text" class="form-control" name="city" value="Bagalkote" required>
+              </div>
+
+              <div class="col-md-5">
+                <label class="form-label small fw-semibold text-muted">Latitude</label>
+                <input type="number" step="any" class="form-control" id="latitude" name="latitude" value="16.1853" required>
+              </div>
+
+              <div class="col-md-5">
+                <label class="form-label small fw-semibold text-muted">Longitude</label>
+                <input type="number" step="any" class="form-control" id="longitude" name="longitude" value="75.6968" required>
+              </div>
+
+              <div class="col-md-2 d-flex align-items-end">
+                <button type="button" class="btn btn-outline-secondary w-100" id="btn-get-gps" title="Get GPS">
+                  <i class="bi bi-geo-alt"></i> GPS
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary-custom w-100 py-3 fw-bold fs-6">
+              <i class="bi bi-check2-circle me-1"></i> Complete Registration
+            </button>
+          </form>
+        </div>
+
+        <div class="app-card-header bg-light text-center py-3 border-top small text-muted">
+          Already registered? <a href="{{ url_for('login') }}" class="text-success fw-bold text-decoration-none">Sign In Here</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function toggleRoleFields() {
+  const isDonor = document.getElementById('role-donor').checked;
+  document.getElementById('donor-section').style.display = isDonor ? 'block' : 'none';
+  document.getElementById('org-section').style.display = isDonor ? 'none' : 'block';
+}
+
+// Auto-check query param if passed e.g. /register?role=organization
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('role') === 'organization') {
+  document.getElementById('role-org').checked = true;
+  toggleRoleFields();
+}
+</script>
+{% endblock %}
