@@ -796,8 +796,14 @@ def create_app(config_class=Config):
             })
         return jsonify(data)
 
-    return app
+       return app
+
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=5000)
+    app.run(
+        debug=True,
+        use_reloader=False,
+        host='0.0.0.0',
+        port=5000
+    )
