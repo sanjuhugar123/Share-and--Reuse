@@ -799,11 +799,12 @@ def create_app(config_class=Config):
        return app
 
 
-if __name__ == '__main__':
-    app = create_app()
-    app.run(
-        debug=True,
-        use_reloader=False,
-        host='0.0.0.0',
-        port=5000
-    )
+app = create_app()
+
+if name == 'main':
+app.run(
+debug=True,
+use_reloader=False,
+host='0.0.0.0',
+port=5000
+)
