@@ -792,7 +792,8 @@ def create_app(config_class=Config):
                 'address': d.pickup_address,
                 'city': d.city,
                 'image_url': d.image_url,
-                'is_urgent': d.food_detail.is_urgent if d.food_detail else False
+                'is_urgent': d.food_detail.is_urgent if d.food_detail 
+            else False
             })
         return jsonify(data)
 
@@ -802,11 +803,10 @@ def create_app(config_class=Config):
 # Vercel entry point
 app = create_app()
 
-
-if __name__ == '__main__':
-    app.run(
-        debug=True,
-        use_reloader=False,
-        host='0.0.0.0',
-        port=5000
-    )
+if name == 'main':
+app.run(
+debug=True,
+use_reloader=False,
+host='0.0.0.0',
+port=5000
+)
