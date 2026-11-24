@@ -7,6 +7,10 @@ from flask import (
     session, jsonify, current_app, send_from_directory
 )
 from werkzeug.utils import secure_filename
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
+import json
+import urllib.request
+import urllib.error
 
 from config import Config
 from models import (
@@ -75,6 +79,84 @@ def create_app(config_class=Config):
     def allowed_file(filename):
         return '.' in filename and \
                filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+    def reset_serializer():
+        return URLSafeTimedSerializer(app.config['SECRET_KEY'], salt='password-reset')
+
+    @app.route('/forgot-password', methods=['GET', 'POST'])
+    def forgot_password():
+        if request.method == 'POST':
+            email = request.form.get('email', '').strip().lower()
+            user = User.query.filter(db.func.lower(User.email) == email).first()
+            if user:
+                token = reset_serializer().dumps(user.email)
+                reset_url = url_for('reset_password', token=token, _external=True)
+                # Local demo flow: show a signed, expiring link. Configure SMTP to email this in production.
+                flash('Password reset link (valid for 30 minutes): ' + reset_url, 'info')
+            else:
+                flash('If an account exists for that email, a reset link has been created.', 'info')
+            return redirect(url_for('forgot_password'))
+        return render_template('forgot_password.html')
+
+    @app.route('/reset-password/<token>', methods=['GET', 'POST'])
+    def reset_password(token):
+        try:
+            email = reset_serializer().loads(token, max_age=1800)
+        except SignatureExpired:
+            flash('That reset link has expired. Request a new one.', 'warning')
+            return redirect(url_for('forgot_password'))
+        except BadSignature:
+            flash('That reset link is invalid. Request a new one.', 'danger')
+            return redirect(url_for('forgot_password'))
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            flash('Account not found. Request a new reset link.', 'warning')
+            return redirect(url_for('forgot_password'))
+        if request.method == 'POST':
+            password = request.form.get('password', '')
+            confirm = request.form.get('confirm_password', '')
+            if len(password) < 8:
+                flash('Choose a password with at least 8 characters.', 'danger')
+            elif password != confirm:
+                flash('Passwords do not match.', 'danger')
+            else:
+                user.set_password(password)
+                db.session.commit()
+                flash('Password updated. You can now sign in.', 'success')
+                return redirect(url_for('login'))
+        return render_template('reset_password.html')
+
+    @app.route('/api/classify-food', methods=['POST'])
+    @login_required
+    @role_required(['donor'])
+    def classify_food_image():
+        image = request.files.get('image')
+        if not image or not image.filename or not allowed_file(image.filename):
+            return jsonify(error='Choose a supported image first.'), 400
+        endpoint = app.config.get('FOOD_CLASSIFIER_URL')
+        if not endpoint:
+            return jsonify(error='AI image checking is not configured. Set FOOD_CLASSIFIER_URL and FOOD_CLASSIFIER_TOKEN.'), 503
+        payload = image.read()
+        if len(payload) > 8 * 1024 * 1024:
+            return jsonify(error='Image must be 8 MB or smaller.'), 413
+        headers = {'Content-Type': image.mimetype or 'application/octet-stream'}
+        token = app.config.get('FOOD_CLASSIFIER_TOKEN')
+        if token:
+            headers['Authorization'] = 'Bearer ' + token
+        try:
+            req = urllib.request.Request(endpoint, data=payload, headers=headers, method='POST')
+            with urllib.request.urlopen(req, timeout=20) as response:
+                result = json.loads(response.read().decode('utf-8'))
+            # Hugging Face image-classification response: [{label, score}, ...]
+            predictions = result if isinstance(result, list) else result.get('predictions', [])
+            food_terms = ('food', 'dish', 'meal', 'fruit', 'vegetable', 'bread', 'meat', 'produce', 'grocery', 'pizza', 'salad')
+            best = max(predictions, key=lambda item: float(item.get('score', 0)), default={})
+            label = str(best.get('label', 'unknown'))
+            is_food = any(term in label.lower() for term in food_terms)
+            return jsonify(is_food=is_food, label=label, confidence=round(float(best.get('score', 0)), 3))
+        except (urllib.error.URLError, TimeoutError, ValueError, TypeError) as exc:
+            app.logger.warning('Food classification failed: %s', exc)
+            return jsonify(error='AI image check failed. Try again or continue with a manual review.'), 502
 
     # ==========================================
     # PUBLIC ROUTES

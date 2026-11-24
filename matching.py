@@ -119,14 +119,25 @@ def find_matching_organizations(donation, max_radius_km=50.0):
         # Proximity score (0 to 100): closer is higher
         proximity_score = max(0.0, 100.0 - (distance_km * 2.0))
         
+    
         # Urgency adjustment
         match_score = proximity_score
-        
+
         if is_food:
-            suitability_reason.append(f"Accepts {donation.food_detail.food_type.capitalize()} food")
+            if donation.food_detail:
+                food_type = donation.food_detail.food_type or 'general'
+            else:
+                food_type = 'general'
+
+            suitability_reason.append(
+                f"Accepts {food_type.capitalize()} food"
+            )
+
             if is_urgent_food:
-                suitability_reason.append("Prioritized for urgent dispatch (< 4 hours shelf life)")
-                # For urgent food, proximity is penalized heavily if far
+                suitability_reason.append(
+                    "Prioritized for urgent dispatch (< 4 hours shelf life)"
+                )
+
                 if distance_km <= 10.0:
                     match_score += 35.0
                 elif distance_km <= 20.0:
@@ -135,6 +146,8 @@ def find_matching_organizations(donation, max_radius_km=50.0):
                     match_score -= 20.0
             else:
                 match_score += 10.0
+
+        
                 
         if is_clothes and is_high_compatibility:
             match_score += 25.0

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Share & Reuse - Complete Team Project & Demo Guide</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; color: #1e293b; }
+    .header-box { background: linear-gradient(135deg, #065f46 0%, #047857 100%); color: white; border-radius: 1rem; padding: 2.5rem; margin-bottom: 2rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    .card-custom { background: white; border-radius: 0.75rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 1.5rem; overflow: hidden; }
+    .card-header-custom { background: #ffffff; border-bottom: 2px solid #f1f5f9; padding: 1.25rem 1.5rem; font-weight: 700; font-size: 1.2rem; }
+    .card-body-custom { padding: 1.5rem; }
+    .member-badge { font-size: 0.85rem; font-weight: 700; padding: 0.35rem 0.75rem; border-radius: 9999px; }
+    .script-box { background: #f1f5f9; border-left: 4px solid #10b981; padding: 1rem; border-radius: 0.375rem; margin-top: 0.75rem; font-style: italic; }
+    .tech-pill { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 0.35rem 0.75rem; border-radius: 0.5rem; font-weight: 600; font-size: 0.85rem; margin: 0.25rem; }
+    pre { background: #1e293b; color: #f8fafc; padding: 1rem; border-radius: 0.5rem; }
+    @media print { .no-print { display: none; } body { background: white; } }
+  </style>
+</head>
+<body class="p-3 p-md-5">
+
+<div class="container" style="max-width: 960px;">
+
+  <!-- Print Button -->
+  <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+    <span class="badge bg-success fs-6"><i class="bi bi-file-earmark-check me-1"></i> Ready to Share</span>
+    <button onclick="window.print()" class="btn btn-outline-dark btn-sm"><i class="bi bi-printer me-1"></i> Print / Save as PDF</button>
+  </div>
+
+  <!-- Header Banner -->
+  <div class="header-box text-center">
+    <h1 class="display-5 fw-bold mb-2">🌿 Share & Reuse</h1>
+    <h4 class="fw-normal opacity-90 mb-3">Intelligent Surplus Food & Clothes Redistribution Platform</h4>
+    <div class="d-flex flex-wrap justify-content-center gap-2">
+      <span class="badge bg-light text-dark px-3 py-2">5th Semester Engineering Mini-Project</span>
+      <span class="badge bg-warning text-dark px-3 py-2">4-Member Team Presentation Kit</span>
+      <span class="badge bg-info text-dark px-3 py-2">Python Flask + MySQL / SQLite</span>
+    </div>
+  </div>
+
+  <!-- 1. What is this project? -->
+  <div class="card-custom">
+    <div class="card-header-custom text-success"><i class="bi bi-info-circle me-2"></i> 1. What is "Share & Reuse"? (Elevator Pitch)</div>
+    <div class="card-body-custom">
+      <p class="lead">
+        <strong>Share & Reuse</strong> is a location-aware web platform bridging donors having surplus food and reusable/unused clothes with verified organizations (NGOs, orphanages, old-age homes) and textile recycling units.
+      </p>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="p-3 bg-light rounded border">
+            <h6 class="fw-bold text-danger"><i class="bi bi-exclamation-triangle-fill me-1"></i> The Real-World Problem:</h6>
+            <ul class="small mb-0 text-muted">
+              <li>Commercial banquet halls and mess facilities throw away cooked meals that spoil in 4–6 hours.</li>
+              <li>Donation drives haphazardly dump damaged scrap fabric at orphanages with no way to recycle it.</li>
+              <li>Static NGO lists have no GPS distance ranking or verified handover mechanisms.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="p-3 bg-light rounded border">
+            <h6 class="fw-bold text-success"><i class="bi bi-check-circle-fill me-1"></i> Our Solution:</h6>
+            <ul class="small mb-0 text-muted">
+              <li><strong>Urgent Food Matching:</strong> Monitors preparation and expiry timestamps; triggers high-priority alerts when time &le; 4 hours.</li>
+              <li><strong>Textile Segregation:</strong> Channels wearable clothes to orphanages and routes damaged scrap to textile recyclers.</li>
+              <li><strong>Haversine GPS Engine:</strong> Calculates road proximity in kilometers and protects handover with a 4-digit OTP PIN.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Advantages & Disadvantages -->
+  <div class="card-custom">
+    <div class="card-header-custom text-primary"><i class="bi bi-ui-checks me-2"></i> 2. Advantages & Disadvantages (Evaluation Analysis)</div>
+    <div class="card-body-custom">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <h6 class="fw-bold text-success"><i class="bi bi-plus-circle me-1"></i> Key Advantages</h6>
+          <ul class="small">
+            <li><strong>Automated Perishability Scoring:</strong> Prioritizes food close to expiry to prevent wastage.</li>
+            <li><strong>Circular Economy for Textiles:</strong> Prevents synthetic fabrics from accumulating in landfills.</li>
+            <li><strong>Mathematical Geolocation:</strong> Uses the spherical Haversine formula instead of flat Euclidean approximations.</li>
+            <li><strong>Anti-Fraud Handover PIN:</strong> 4-digit OTP code ensures physical receipt before marking donations completed.</li>
+            <li><strong>Zero API Costs:</strong> Free Leaflet.js + OpenStreetMap instead of expensive Google Maps billing.</li>
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <h6 class="fw-bold text-danger"><i class="bi bi-dash-circle me-1"></i> Limitations & Future Enhancements</h6>
+          <ul class="small">
+            <li><strong>Physical Sensory Inspection:</strong> The platform relies on declared food hygiene; driver checks condition at pickup. <em>(Future work: IoT smart gas freshness sensors).</em></li>
+            <li><strong>Connectivity Dependency:</strong> Requires internet for real-time OTP validation. <em>(Future work: Offline SMS/USSD fallback).</em></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Tech Stack Deep Dive -->
+  <div class="card-custom">
+    <div class="card-header-custom text-dark"><i class="bi bi-cpu me-2"></i> 3. Technologies Used & How They Work</div>
+    <div class="card-body-custom">
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle small mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Technology</th>
+              <th>Role in Project</th>
+              <th>Why It Is Critical</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Python 3.13 + Flask</strong></td>
+              <td>Application Controller & Routing</td>
+              <td>Lightweight MVC framework; straightforward to configure, debug, and defend in university viva.</td>
+            </tr>
+            <tr>
+              <td><strong>Flask-SQLAlchemy</strong></td>
+              <td>Object Relational Mapping (ORM)</td>
+              <td>Translates Python classes into database tables with built-in SQL injection defense and relationship cascades.</td>
+            </tr>
+            <tr>
+              <td><strong>SQLite & MySQL 8.0</strong></td>
+              <td>Dual Database Support</td>
+              <td>Runs instantly with zero setup via SQLite; includes ready MySQL DDL scripts for enterprise demonstration.</td>
+            </tr>
+            <tr>
+              <td><strong>Haversine Algorithm</strong></td>
+              <td>Proximity Matching Math</td>
+              <td>Calculates geodesic spherical distance between donor coordinates and recipient organizations across the Earth's curvature.</td>
+            </tr>
+            <tr>
+              <td><strong>Leaflet.js + OpenStreetMap</strong></td>
+              <td>Interactive Map Visualizations</td>
+              <td>Open-source map rendering with custom draggable markers and proximity route lines.</td>
+            </tr>
+            <tr>
+              <td><strong>Bootstrap 5.3 + JavaScript</strong></td>
+              <td>Responsive UI & Countdown Clocks</td>
+              <td>Mobile-friendly interface with real-time countdown timers ticking for perishable food donations.</td>
+            </tr>
+            <tr>
+              <td><strong>Chart.js</strong></td>
+              <td>Admin Impact Analytics</td>
+              <td>Visualizes waste diversion metrics, category splits, and pipeline statuses on the Admin console.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Team Work Distribution -->
+  <div class="card-custom">
+    <div class="card-header-custom text-danger"><i class="bi bi-people me-2"></i> 4. 4-Member Work Distribution & Viva Speaking Scripts</div>
+    <div class="card-body-custom">
+      
+      <!-- Member 1 -->
+      <div class="p-3 bg-light rounded border mb-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold mb-0">Member 1: Team Lead & Backend Core</h5>
+          <span class="badge bg-primary member-badge">Controller & Security</span>
+        </div>
+        <p class="small text-muted mt-1 mb-1"><strong>Files:</strong> <code>app.py</code>, <code>config.py</code>, <code>requirements.txt</code></p>
+        <p class="small mb-1"><strong>Responsibilities:</strong> Designed the Flask application architecture, session-based authentication guards (<code>@login_required</code>, <code>@role_required</code>), and the 4-digit OTP handover generation logic.</p>
+        <div class="script-box small">
+          <strong>Speaking Line for Examiner:</strong> "I developed the central application architecture and security controls in Flask. I built the session guards for multi-role access and implemented the OTP verification protocol that guarantees physical receipt."
+        </div>
+      </div>
+
+      <!-- Member 2 -->
+      <div class="p-3 bg-light rounded border mb-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold mb-0">Member 2: Algorithm & Geospatial Specialist</h5>
+          <span class="badge bg-success member-badge">Algorithm & Logic</span>
+        </div>
+        <p class="small text-muted mt-1 mb-1"><strong>Files:</strong> <code>matching.py</code></p>
+        <p class="small mb-1"><strong>Responsibilities:</strong> Implemented the spherical Haversine distance formula, the urgent-food shelf-life decay calculation, and the smart clothes routing gate (reusable vs. textile recycler).</p>
+        <div class="script-box small">
+          <strong>Speaking Line for Examiner:</strong> "I developed the mathematical matching engine in <code>matching.py</code>. I implemented the Haversine formula to compute road proximity in kilometers and designed the shelf-life urgency algorithm that boosts priorities when food has under 4 hours remaining."
+        </div>
+      </div>
+
+      <!-- Member 3 -->
+      <div class="p-3 bg-light rounded border mb-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold mb-0">Member 3: UI/UX & Interactive Maps</h5>
+          <span class="badge bg-warning text-dark member-badge">Frontend & Maps</span>
+        </div>
+        <p class="small text-muted mt-1 mb-1"><strong>Files:</strong> <code>templates/</code>, <code>static/js/main.js</code>, <code>static/css/style.css</code></p>
+        <p class="small mb-1"><strong>Responsibilities:</strong> Designed the 12 responsive Jinja2 UI templates using Bootstrap 5, integrated Leaflet.js maps with dynamic GPS pins, and created real-time JavaScript countdown clocks.</p>
+        <div class="script-box small">
+          <strong>Speaking Line for Examiner:</strong> "I built the responsive user interfaces and mapping features. I integrated Leaflet.js with OpenStreetMap to display nearby NGOs visually with distance lines, and created live JavaScript countdown timers for expiring food."
+        </div>
+      </div>
+
+      <!-- Member 4 -->
+      <div class="p-3 bg-light rounded border">
+        <div class="d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold mb-0">Member 4: Database Architect & Admin Governance</h5>
+          <span class="badge bg-dark member-badge">Database & Analytics</span>
+        </div>
+        <p class="small text-muted mt-1 mb-1"><strong>Files:</strong> <code>models.py</code>, <code>database/schema.sql</code>, <code>admin_dashboard.html</code>, <code>certificate.html</code></p>
+        <p class="small mb-1"><strong>Responsibilities:</strong> Structured the relational schema in SQLAlchemy, implemented the Admin verification console, integrated Chart.js visual analytics, and developed the printable Certificate of Social Impact.</p>
+        <div class="script-box small">
+          <strong>Speaking Line for Examiner:</strong> "I architected the database schema in <code>models.py</code> with foreign key constraints, built the Admin verification console with Chart.js analytics, and created the printable Certificates of Appreciation."
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 5. 10-Minute Demo Plan -->
+  <div class="card-custom">
+    <div class="card-header-custom text-info"><i class="bi bi-clock-history me-2"></i> 5. Recommended 10-Minute Demo Sequence</div>
+    <div class="card-body-custom">
+      <div class="table-responsive">
+        <table class="table table-bordered small align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th style="width: 15%;">Time</th>
+              <th style="width: 25%;">Speaker</th>
+              <th>Action on Screen</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>0:00 – 2:00</strong></td>
+              <td><strong>Member 1</strong></td>
+              <td>Open <a href="http://127.0.0.1:5000">Home Page</a>. Explain problem statement, real-world relevance, and system architecture.</td>
+            </tr>
+            <tr>
+              <td><strong>2:00 – 4:00</strong></td>
+              <td><strong>Member 2</strong></td>
+              <td>Log in as <strong>Hotel Basaveshwar</strong> (<code>basaveshwar.hotel@gmail.com</code> / <code>donor123</code>). Create an urgent food donation. Explain the Haversine formula and match score.</td>
+            </tr>
+            <tr>
+              <td><strong>4:00 – 6:30</strong></td>
+              <td><strong>Member 3</strong></td>
+              <td>Show the <strong>Nearby Organizations</strong> screen with the Leaflet map, distance lines, and ticking countdown timer.</td>
+            </tr>
+            <tr>
+              <td><strong>6:30 – 8:30</strong></td>
+              <td><strong>Member 1 & 4</strong></td>
+              <td>Log in as <strong>Sneha Deepa Orphanage</strong> (<code>snehadheepa.orphanage@gmail.com</code> / <code>org123</code>). Accept the pickup, enter donor OTP PIN to verify handover, and open the Certificate of Impact.</td>
+            </tr>
+            <tr>
+              <td><strong>8:30 – 10:00</strong></td>
+              <td><strong>Member 4</strong></td>
+              <td>Log in as <strong>Admin</strong> (<code>admin@shareandreuse.org</code> / <code>admin123</code>). Demonstrate Chart.js charts and the NGO verification queue. Conclude presentation.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. How to Run -->
+  <div class="card-custom">
+    <div class="card-header-custom text-secondary"><i class="bi bi-terminal me-2"></i> 6. How to Run the Project</div>
+    <div class="card-body-custom">
+      <p class="small mb-2"><strong>Option 1 (1-Click):</strong> Inside your <code>Mini project</code> folder on Desktop, double-click: <strong><code>run_server.bat</code></strong>.</p>
+      <p class="small mb-2"><strong>Option 2 (In VS Code):</strong> Open the <code>Mini project</code> folder in VS Code, open terminal (<code>Ctrl + ~</code>), and run:</p>
+      <pre class="mb-0"><code>python app.py</code></pre>
+      <p class="small mt-2 mb-0">Open browser at: <a href="http://127.0.0.1:5000" target="_blank"><strong>http://127.0.0.1:5000</strong></a></p>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

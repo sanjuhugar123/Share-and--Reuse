@@ -244,14 +244,14 @@
       {% for don in recent_donations %}
         <div class="col-md-6 col-lg-4">
           <div class="app-card h-100 {% if don.food_detail and don.food_detail.is_urgent %}urgent-pulse{% endif %}">
-            <div class="position-relative" style="height: 180px; overflow: hidden; background: #e2e8f0;">
-              {% if don.image_url %}
-                <img src="{{ don.image_url }}" alt="{{ don.title }}" class="w-100 h-100 object-fit-cover">
-              {% else %}
-                <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted">
-                  <i class="bi bi-card-image fs-1"></i>
-                </div>
-              {% endif %}
+            <div class="p-4 d-flex align-items-center justify-content-between position-relative" style="background: {% if don.category == 'food' %}linear-gradient(135deg, #fef08a, #fde047){% else %}linear-gradient(135deg, #e0e7ff, #c7d2fe){% endif %}; min-height: 120px;">
+  <div class="rounded-circle bg-white d-flex align-items-center justify-content-center shadow-sm" style="width: 58px; height: 58px;">
+    {% if don.category == 'food' %}
+      <i class="bi bi-egg-fried fs-2 text-warning"></i>
+    {% else %}
+      <i class="bi bi-tag-fill fs-2 text-primary"></i>
+    {% endif %}
+  </div>
               
               <div class="position-absolute top-0 start-0 m-3 d-flex gap-2">
                 {% if don.category == 'food' %}
