@@ -263,29 +263,91 @@
 {% block extra_scripts %}
 <script>
 let pickerMap, pickerMarker;
+let foodClassifierPromise;
 
 document.addEventListener('DOMContentLoaded', function () {
   const imageInput = document.querySelector('input[name="image"]');
   const resultBox = document.getElementById('food-ai-result');
-  imageInput.addEventListener('change', async function () {
-    if (!this.files.length || !document.getElementById('category-food').checked) {
+  const donationForm = document.getElementById('donation-form');
+  let classificationInProgress = false;
+  let checkedImage = null;
+  let foodConfirmed = null;
+
+  async function classifyFoodImage() {
+    if (!imageInput.files.length || !document.getElementById('category-food').checked || classificationInProgress) {
       resultBox.textContent = '';
       return;
     }
+    checkedImage = imageInput.files[0];
+    foodConfirmed = null;
+    classificationInProgress = true;
     resultBox.className = 'small mt-2 text-muted';
-    resultBox.textContent = 'Checking image with AI…';
-    const data = new FormData();
-    data.append('image', this.files[0]);
+    resultBox.textContent = 'Loading the AI model if needed, then checking the image...';
     try {
-      const response = await fetch('{{ url_for("classify_food_image") }}', { method: 'POST', body: data });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'AI check unavailable.');
-      resultBox.className = `small mt-2 fw-semibold ${result.is_food ? 'text-success' : 'text-danger'}`;
-      resultBox.textContent = `${result.is_food ? 'Likely food' : 'May not be food'} — ${result.label} (${Math.round(result.confidence * 100)}% confidence). Please verify manually.`;
+      if (!foodClassifierPromise) {
+        foodClassifierPromise = import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1')
+          .then(({ pipeline, env }) => {
+            env.allowLocalModels = false;
+            return pipeline('zero-shot-image-classification', 'Xenova/clip-vit-base-patch32');
+          });
+      }
+      const classifier = await foodClassifierPromise;
+      const imageUrl = URL.createObjectURL(imageInput.files[0]);
+      let predictions;
+      const foodLabel = 'a clear photograph of edible food, such as a prepared meal, fruit, vegetables, bread, or groceries';
+      try {
+        predictions = await classifier(imageUrl, [
+          foodLabel,
+          'a photograph of clothing, shoes, or fabric',
+          'a printed event poster, flyer, banner, or advertisement with text',
+          'a photograph of a computer, phone, electronic device, or technology event',
+          'a photograph of another non-food object or scene'
+        ]);
+      } finally {
+        URL.revokeObjectURL(imageUrl);
+      }
+      const best = predictions[0];
+      const nextBest = predictions[1];
+      const isFood = best.label === foodLabel && best.score >= 0.5 && best.score - nextBest.score >= 0.15;
+      const uncertain = best.score < 0.5 || (best.label === foodLabel && best.score - nextBest.score < 0.15);
+      foodConfirmed = isFood;
+      resultBox.className = `small mt-2 fw-semibold ${isFood ? 'text-success' : (uncertain ? 'text-warning-emphasis' : 'text-danger')}`;
+      resultBox.textContent = `${isFood ? 'Likely food' : (uncertain ? 'AI could not confirm this is food' : 'May not be food')} - Best match: ${best.label.replace(/^a (clear )?photograph of /, '')} (${Math.round(best.score * 100)}% model score). Please verify manually.`;
     } catch (error) {
       resultBox.className = 'small mt-2 text-warning-emphasis';
-      resultBox.textContent = `${error.message} You can still submit for manual review.`;
+      foodClassifierPromise = null;
+      resultBox.textContent = 'AI model could not load. Check your internet connection and try again, or remove the photo to submit without one for manual review.';
+    } finally {
+      classificationInProgress = false;
     }
+  }
+
+  imageInput.addEventListener('change', () => {
+    checkedImage = null;
+    foodConfirmed = null;
+    classifyFoodImage();
+  });
+  donationForm.addEventListener('submit', function (event) {
+    const image = imageInput.files[0];
+    if (!document.getElementById('category-food').checked || !image) return;
+    if (classificationInProgress) {
+      event.preventDefault();
+      resultBox.className = 'small mt-2 text-warning-emphasis';
+      resultBox.textContent = 'Please wait for the AI image check to finish before posting.';
+      return;
+    }
+    if (checkedImage !== image || foodConfirmed !== true) {
+      event.preventDefault();
+      if (checkedImage !== image) classifyFoodImage();
+      resultBox.className = 'small mt-2 text-warning-emphasis';
+      resultBox.textContent = 'This image was not confirmed as food. Upload a clear food photo, or remove the photo to post for manual review.';
+    }
+  });
+  document.querySelectorAll('input[name="category"]').forEach((categoryInput) => {
+    categoryInput.addEventListener('change', () => {
+      if (categoryInput.value === 'food') classifyFoodImage();
+      else resultBox.textContent = '';
+    });
   });
 
   const initLat = parseFloat(document.getElementById('latitude').value) || 16.1853;

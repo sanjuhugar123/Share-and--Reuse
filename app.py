@@ -92,11 +92,11 @@ def create_app(config_class=Config):
                 token = reset_serializer().dumps(user.email)
                 reset_url = url_for('reset_password', token=token, _external=True)
                 # Local demo flow: show a signed, expiring link. Configure SMTP to email this in production.
-                flash('Password reset link (valid for 30 minutes): ' + reset_url, 'info')
-            else:
-                flash('If an account exists for that email, a reset link has been created.', 'info')
+                session['password_reset_url'] = reset_url
+            flash('If an account exists for that email, a reset link has been created.', 'info')
             return redirect(url_for('forgot_password'))
-        return render_template('forgot_password.html')
+        reset_url = session.pop('password_reset_url', None)
+        return render_template('forgot_password.html', reset_url=reset_url)
 
     @app.route('/reset-password/<token>', methods=['GET', 'POST'])
     def reset_password(token):
